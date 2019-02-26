@@ -7,6 +7,10 @@ const config = {
   query: "((firstname >= 'Jack' AND lastName<'London') OR lastName<>'Smith')",
 };
 
+const dropdownconfig = {
+  query: "(lastName = 'London' AND age in '30')"
+}
+
 const defaultFields = [
   { name: 'firstName', operators: 'all', label: 'First Name', input: { type: 'text' } },
   { name: 'lastName', operators: 'all', label: 'Last Name', input: { type: 'text' } },
@@ -73,4 +77,7 @@ storiesOf('Query builder', module)
   ))
   .add('validation', () => (
     <TwoWayQuerybuilder fields={validationFields} onChange={action('data changed')} />
+  ))
+  .add('existing query and changed input types', () => (
+    <TwoWayQuerybuilder fields={changedFields} config={dropdownconfig} onChange={action('data changed')} />
   ));
