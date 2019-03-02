@@ -48,6 +48,7 @@ export default class QueryParser {
     let path = nodeName.split('/');
     return path.length > 1 && path[path.length - 1] == '1';
   }
+  
   static parseToData(query, config) {
     const data = null;
     const tokens = this.getTokensArray(query, config.combinators, config.operators);
