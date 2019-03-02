@@ -4,8 +4,12 @@ import TwoWayQuerybuilder from '../../src/TwoWayQuerybuilder';
 import './index.css';
 
 const config = {
-  query: "((firstname >= 'Jack' AND lastName<'London') OR lastName<>'Smith')",
+  query: "((firstName >= 'Jack' AND lastName<'London') OR lastName<>'Smith')",
 };
+
+const dropdownconfig = {
+  query: "(lastName = 'London' AND age in '30')"
+}
 
 const defaultFields = [
   { name: 'firstName', operators: 'all', label: 'First Name', input: { type: 'text' } },
@@ -20,9 +24,9 @@ const validationFields = [
   { name: 'lastName', operators: 'all', label: 'Last Name', input: {
      type: 'text', errorText: 'Only letters allowed', pattern: new RegExp("[a-z]+", "gi") } },
   { name: 'age', operators: 'all', label: 'Age', input: {
-     type: 'text', errorText: 'Only nubmers allowed', pattern: new RegExp('[0-9]+', 'gi') } },
+     type: 'text', errorText: 'Only numbers allowed', pattern: new RegExp('[0-9]+', 'gi') } },
   { name: 'birthDate', operators: 'all', label: 'Birth date', input: { 
-    type: 'text', errorText: 'Only nubmers allowed', pattern: new RegExp('[0-9]+', 'gi') }
+    type: 'text', errorText: 'Only numbers allowed', pattern: new RegExp('[0-9]+', 'gi') }
    },
 ];
 
@@ -73,4 +77,7 @@ storiesOf('Query builder', module)
   ))
   .add('validation', () => (
     <TwoWayQuerybuilder fields={validationFields} onChange={action('data changed')} />
+  ))
+  .add('existing query and changed input types', () => (
+    <TwoWayQuerybuilder fields={changedFields} config={dropdownconfig} onChange={action('data changed')} />
   ));

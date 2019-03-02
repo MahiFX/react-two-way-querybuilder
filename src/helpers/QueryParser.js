@@ -18,6 +18,37 @@ export default class QueryParser {
     return `${query})`;
   }
 
+  static parseToSql(data) {
+    if ((data.rules == null || data.rules.length == 0) && data.field != undefined && data.operator != undefined && data.value != undefined) {
+      return `${data.field} ${data.operator} ${data.value}`;
+    }
+
+    if (data.rules != null) {
+      if (data.rules.length == 0) {
+        return '';
+      }
+
+      if (data.rules.length == 1) {
+        return `${this.parseToSql(data.rules[0])}`;
+      }
+
+      if (data.rules.length > 1) {
+        var newData = {
+          combinator: data.combinator,
+          nodeName: data.nodeName,
+          rules: data.rules.slice(1)
+        };
+
+        return `${this.isFirstOfGroup(data.rules[0].nodeName) ? '(' : ''}${this.parseToSql(data.rules[0])} ${data.combinator} ${this.parseToSql(newData)}${this.isFirstOfGroup(data.rules[0].nodeName) ? ')' : ''}`
+      }
+    }
+  }
+
+  static isFirstOfGroup(nodeName) {
+    let path = nodeName.split('/');
+    return path.length > 1 && path[path.length - 1] == '1';
+  }
+  
   static parseToData(query, config) {
     const data = null;
     const tokens = this.getTokensArray(query, config.combinators, config.operators);
