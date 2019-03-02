@@ -62,6 +62,7 @@ class TwoWayQuerybuilder extends React.Component {
     this.state = {
       data: this.config.query === '()' ? defaultData : QueryParser.parseToData(this.config.query, this.config),
       query: this.config.query === '()' ? null : this.config.query,
+      sql: ''
     };
     this.handleChange = this.handleChange.bind(this);
   }
@@ -70,6 +71,7 @@ class TwoWayQuerybuilder extends React.Component {
     const queryObj = {};
     queryObj.data = data;
     queryObj.query = QueryParser.parseToQuery(data);
+    queryObj.sql = QueryParser.parseToSql(data);
     this.setState({ query: queryObj.query });
     if (this.props.onChange) {
       this.props.onChange(queryObj);
