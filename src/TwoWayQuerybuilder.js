@@ -79,6 +79,7 @@ class TwoWayQuerybuilder extends React.Component {
   }
 
   render() {
+    console.log("render");
     return (<div>
       <Condition
         config={this.config}
