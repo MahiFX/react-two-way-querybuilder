@@ -26,7 +26,8 @@ class Condition extends React.Component {
       field: this.props.fields[0].name,
       operator: this.props.config.operators[0].operator,
       value: '',
-      nodeName });
+      nodeName
+    });
     this.setState({ data });
     this.props.onChange(this.props.data);
   }
@@ -37,7 +38,8 @@ class Condition extends React.Component {
     data.rules.push({
       combinator: this.props.config.combinators[0].combinator,
       nodeName,
-      rules: [] });
+      rules: []
+    });
     this.setState({ data });
     this.props.onChange(this.props.data);
   }
@@ -61,7 +63,8 @@ class Condition extends React.Component {
   render() {
     return (
       <div className={this.styles.condition}>
-        <select value={this.state.data.combinator} className={this.styles.select} onChange={this.combinatorChange}>
+        <select value={this.state.data.combinator} className={this.styles.select}
+                onChange={this.combinatorChange}>
           {this
             .props
             .config
@@ -86,26 +89,26 @@ class Condition extends React.Component {
           .state
           .data
           .rules
-          .map((rule, index) => {
+          .map((rule) => {
             if (rule.field) {
               return (<Rule
-                key={index}
+                key={rule.nodeName}
                 buttonsText={this.props.buttonsText}
                 fields={this.props.fields}
                 operators={this.props.config.operators}
                 nodeName={rule.nodeName}
                 data={this.props.data}
                 onChange={this.handleChildUpdate}
-                styles={this.props.config.styles} />);
+                styles={this.props.config.styles}/>);
             } else {
               return (<Condition
-                key={index}
+                key={rule.nodeName}
                 config={this.props.config}
                 buttonsText={this.props.buttonsText}
                 fields={this.props.fields}
                 nodeName={rule.nodeName}
                 data={this.props.data}
-                onChange={this.handleChildUpdate} />);
+                onChange={this.handleChildUpdate}/>);
             }
           })}
       </div>

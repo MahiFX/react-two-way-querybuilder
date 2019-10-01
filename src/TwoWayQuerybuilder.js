@@ -62,7 +62,7 @@ class TwoWayQuerybuilder extends React.Component {
     this.state = {
       data: this.config.query === '()' ? defaultData : QueryParser.parseToData(this.config.query, this.config),
       query: this.config.query === '()' ? null : this.config.query,
-      sql: ''
+      sql: '',
     };
     this.handleChange = this.handleChange.bind(this);
   }
@@ -79,9 +79,9 @@ class TwoWayQuerybuilder extends React.Component {
   }
 
   render() {
-    console.log("render");
     return (<div>
       <Condition
+        key={'1'}
         config={this.config}
         buttonsText={this.buttonsText}
         fields={this.props.fields}
