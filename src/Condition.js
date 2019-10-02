@@ -16,6 +16,7 @@ class Condition extends React.Component {
     this.handleDelete = this.handleDelete.bind(this);
     this.handleChildUpdate = this.handleChildUpdate.bind(this);
     this.combinatorChange = this.combinatorChange.bind(this);
+    this.combinatorValueChange = this.combinatorValueChange.bind(this);
     this.styles = this.props.config.styles;
   }
 
@@ -26,7 +27,7 @@ class Condition extends React.Component {
       field: this.props.fields[0].name,
       operator: this.props.config.operators[0].operator,
       value: '',
-      nodeName
+      nodeName,
     });
     this.setState({ data });
     this.props.onChange(this.props.data);
@@ -38,7 +39,7 @@ class Condition extends React.Component {
     data.rules.push({
       combinator: this.props.config.combinators[0].combinator,
       nodeName,
-      rules: []
+      rules: [],
     });
     this.setState({ data });
     this.props.onChange(this.props.data);
@@ -56,35 +57,64 @@ class Condition extends React.Component {
   }
 
   combinatorChange(event) {
-    this.node.combinator = event.target.value;
+    this.combinatorValueChange(event.target.value);
+  }
+
+  combinatorValueChange(combinator) {
+    this.node.combinator = combinator;
     this.props.onChange(this.props.data);
   }
 
   render() {
+    let deleteBtn;
+
+    if (this.props.nodeName !== '1') {
+      if (typeof this.props.config.deleteButtonRenderer === 'function') {
+        deleteBtn = this.props.config.deleteButtonRenderer(
+          () => this.handleDelete(this.props.nodeName),
+          this.props.buttonsText.delete);
+      } else {
+        deleteBtn = (<button
+          type="button"
+          onClick={() => this.handleDelete(this.props.nodeName)}
+          className={this.styles.deleteBtn}
+        >{this.props.buttonsText.delete}</button>);
+      }
+    }
+
     return (
       <div className={this.styles.condition}>
-        <select value={this.state.data.combinator} className={this.styles.select}
-                onChange={this.combinatorChange}>
-          {this
-            .props
-            .config
-            .combinators
-            .map((combinator, index) => {
-              return <option value={combinator.combinator} key={index}>{combinator.label}</option>;
-            })}
-        </select>
-        <button type="button" className={this.styles.primaryBtn} onClick={this.addCondition}>
-          {this.props.buttonsText.addGroup}
-        </button>
-        <button type="button" className={this.styles.primaryBtn} onClick={this.addRule}>
-          {this.props.buttonsText.addRule}
-        </button>
-        {this.props.nodeName !== '1'
-          ? <button
-            type="button"
-            onClick={() => this.handleDelete(this.props.nodeName)}
-            className={this.styles.deleteBtn}>{this.props.buttonsText.delete}</button>
-          : null}
+        {typeof this.props.config.combinatorRenderer === 'function' ? this.props.config.combinatorRenderer(this.combinatorValueChange, this.state.data.combinator) :
+          (<select
+            value={this.state.data.combinator} className={this.styles.select}
+            onChange={this.combinatorChange}
+          >
+            {this
+              .props
+              .config
+              .combinators
+              .map((combinator, index) => {
+                return (
+                  <option
+                    value={combinator.combinator}
+                    key={index}
+                  >
+                    {combinator.label}
+                  </option>);
+              })}
+          </select>)
+        }
+        {typeof this.props.config.primaryButtonRenderer === 'function' ? this.props.config.primaryButtonRenderer(this.addCondition, this.props.buttonsText.addGroup) :
+          <button type="button" className={this.styles.primaryBtn} onClick={this.addCondition}>
+            {this.props.buttonsText.addGroup}
+          </button>
+        }
+        {typeof this.props.config.primaryButtonRenderer === 'function' ? this.props.config.primaryButtonRenderer(this.addRule, this.props.buttonsText.addRule) :
+          <button type="button" className={this.styles.primaryBtn} onClick={this.addRule}>
+            {this.props.buttonsText.addRule}
+          </button>
+        }
+        {deleteBtn}
         {this
           .state
           .data
@@ -99,17 +129,21 @@ class Condition extends React.Component {
                 nodeName={rule.nodeName}
                 data={this.props.data}
                 onChange={this.handleChildUpdate}
-                styles={this.props.config.styles}/>);
-            } else {
-              return (<Condition
-                key={rule.nodeName}
-                config={this.props.config}
-                buttonsText={this.props.buttonsText}
-                fields={this.props.fields}
-                nodeName={rule.nodeName}
-                data={this.props.data}
-                onChange={this.handleChildUpdate}/>);
+                styles={this.props.config.styles}
+                fieldRenderer={this.props.config.fieldRenderer}
+                operatorRenderer={this.props.config.operatorRenderer}
+                deleteButtonRenderer={this.props.config.deleteButtonRenderer}
+              />);
             }
+            return (<Condition
+              key={rule.nodeName}
+              config={this.props.config}
+              buttonsText={this.props.buttonsText}
+              fields={this.props.fields}
+              nodeName={rule.nodeName}
+              data={this.props.data}
+              onChange={this.handleChildUpdate}
+            />);
           })}
       </div>
     );

@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import TreeHelper from './TreeHelper';
 import ASTree from './ASTree';
 
@@ -19,36 +20,37 @@ export default class QueryParser {
   }
 
   static parseToSql(data) {
-    if ((data.rules == null || data.rules.length == 0) && data.field != undefined && data.operator != undefined && data.value != undefined) {
+    if ((data.rules == null || data.rules.length === 0) &&
+      data.field !== undefined && data.operator !== undefined && data.value !== undefined) {
       return `${data.field} ${data.operator} ${data.value}`;
     }
 
     if (data.rules != null) {
-      if (data.rules.length == 0) {
+      if (data.rules.length === 0) {
         return '';
       }
 
-      if (data.rules.length == 1) {
+      if (data.rules.length === 1) {
         return `${this.parseToSql(data.rules[0])}`;
       }
 
       if (data.rules.length > 1) {
-        var newData = {
+        const newData = {
           combinator: data.combinator,
           nodeName: data.nodeName,
-          rules: data.rules.slice(1)
+          rules: data.rules.slice(1),
         };
 
-        return `${this.isFirstOfGroup(data.rules[0].nodeName) ? '(' : ''}${this.parseToSql(data.rules[0])} ${data.combinator} ${this.parseToSql(newData)}${this.isFirstOfGroup(data.rules[0].nodeName) ? ')' : ''}`
+        return `${this.isFirstOfGroup(data.rules[0].nodeName) ? '(' : ''}${this.parseToSql(data.rules[0])} ${data.combinator} ${this.parseToSql(newData)}${this.isFirstOfGroup(data.rules[0].nodeName) ? ')' : ''}`;
       }
     }
   }
 
   static isFirstOfGroup(nodeName) {
-    let path = nodeName.split('/');
-    return path.length > 1 && path[path.length - 1] == '1';
+    const path = nodeName.split('/');
+    return path.length > 1 && path[path.length - 1] === '1';
   }
-  
+
   static parseToData(query, config) {
     const data = null;
     const tokens = this.getTokensArray(query, config.combinators, config.operators);
@@ -57,7 +59,7 @@ export default class QueryParser {
   }
 
   static convertSyntaxTreeToData(element, data, combinators, nodeName, combNodeName) {
-    data = data ? data : {};
+    data = data || {};
     let newCombName = combNodeName;
     const firstCombinator = this.getFirstCombinator(element, combinators);
     const treeHelper = new TreeHelper(data);
@@ -119,7 +121,7 @@ export default class QueryParser {
 
   static createTokenObject(token, operators) {
     const operatorsPattern = this.getSearchPattern(operators, 'operator');
-    const matches = this.matchAll(token, operatorsPattern);
+    const matches = this.matchAll(token, operatorsPattern, 1);
     const mathesLength = matches.map(el => el.value).join('').length;
     const operatorEndIndex = matches[0].index + mathesLength;
     return {
@@ -129,17 +131,23 @@ export default class QueryParser {
     };
   }
 
-  static matchAll(str, regex) {
+  static matchAll(str, regex, groupIndex = 0) {
     const res = [];
     let m;
     if (regex.global) {
       while (m = regex.exec(str)) {
-        res.push({ value: m[0], index: m.index });
+        this.pushMatch(m, groupIndex, res);
       }
     } else if (m = regex.exec(str)) {
-      res.push({ value: m[0], index: m.index });
+      this.pushMatch(m, groupIndex, res);
     }
     return res;
+  }
+
+  static pushMatch(m, groupIndex, res) {
+    const fullMatch = m[0];
+    const groupMatch = m[groupIndex];
+    res.push({ value: groupMatch, index: m.index + fullMatch.indexOf(groupMatch) });
   }
 
   static getCombinatorsIndexes(query, combinators) {
@@ -147,7 +155,10 @@ export default class QueryParser {
     const combinatorsPattern = this.getSearchPattern(combinators, 'combinator');
     let match;
     while ((match = combinatorsPattern.exec(query)) !== null) {
-      combinatorsIndexes.push({ start: match.index, end: combinatorsPattern.lastIndex });
+      const fullMatch = match[0];
+      const groupMatch = match[1];
+      const startIndex = match.index + fullMatch.indexOf(groupMatch);
+      combinatorsIndexes.push({ start: startIndex, end: startIndex + groupMatch.length });
     }
     return combinatorsIndexes;
   }
@@ -159,7 +170,7 @@ export default class QueryParser {
     }
     // To remove first | character
     pattern = pattern.slice(1);
-    return new RegExp(pattern, 'g');
+    return new RegExp(`[\\s^]+(${pattern})[\\s$]+`, 'g');
   }
 
   static getFirstCombinator(element, combinators) {

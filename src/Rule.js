@@ -21,8 +21,6 @@ class Rule extends React.Component {
       prototypeValueSetter.call(element, value);
     } else if (valueSetter) {
       valueSetter.call(element, value);
-    } else {
-      throw new Error('The given element does not have a value setter');
     }
   }
 
@@ -31,8 +29,11 @@ class Rule extends React.Component {
     this.getFieldByName = this.getFieldByName.bind(this);
     this.generateRuleObject = this.generateRuleObject.bind(this);
     this.onFieldChanged = this.onFieldChanged.bind(this);
+    this.onFieldValueChanged = this.onFieldValueChanged.bind(this);
     this.onOperatorChanged = this.onOperatorChanged.bind(this);
+    this.onOperatorValueChange = this.onOperatorValueChange.bind(this);
     this.onInputChanged = this.onInputChanged.bind(this);
+    this.onInputValueChange = this.onInputValueChange.bind(this);
     this.getInputTag = this.getInputTag.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
     this.treeHelper = new TreeHelper(this.props.data);
@@ -54,20 +55,26 @@ class Rule extends React.Component {
 
 
   onFieldChanged(event) {
-    this.node.field = event.target.value;
-    const field = this.getFieldByName(event.target.value);
-    const rule = this.generateRuleObject(field, this.node);
-    this.setState({ currField: rule });
-    this.props.onChange();
+    const value = event.target.value;
+    this.onFieldValueChanged(value);
+  }
+
+  onFieldValueChanged(value) {
+    this.node.field = value;
+    this.node.value = '';
     if (this.inputRef) {
-      Rule.setNativeValue(this.inputRef, undefined);
-      const ev2 = new Event('change', { bubbles: true });
-      this.inputRef.dispatchEvent(ev2);
+      Rule.setNativeValue(this.inputRef, '');
     }
+    this.onInputValueChange('');
   }
 
   onOperatorChanged(event) {
-    this.node.operator = event.target.value;
+    const value = event.target.value;
+    this.onOperatorValueChange(value);
+  }
+
+  onOperatorValueChange(value) {
+    this.node.operator = value;
     const field = this.getFieldByName(this.node.field);
     const rule = this.generateRuleObject(field, this.node);
     this.setState({ currField: rule });
@@ -75,12 +82,17 @@ class Rule extends React.Component {
   }
 
   onInputChanged(event) {
+    const value = event.target.value;
+    this.onInputValueChange(value);
+  }
+
+  onInputValueChange(value) {
     const pattern = this.state.currField.input.pattern;
     let validationError = false;
     if (pattern) {
-      validationError = isValueCorrect(pattern, event.target.value);
+      validationError = isValueCorrect(pattern, value);
     }
-    this.node.value = event.target.value;
+    this.node.value = value;
     const field = this.getFieldByName(this.node.field);
     const rule = this.generateRuleObject(field, this.node);
     this.setState({
@@ -186,30 +198,38 @@ class Rule extends React.Component {
   render() {
     return (
       <div className={this.styles.rule}>
-        <select
-          value={this.node.field}
-          className={this.styles.select}
-          onChange={this.onFieldChanged}
-        >
-          {this.props.fields.map((field, index) =>
-            <option value={field.name} key={index}>{field.label}</option>
-          )}
-        </select>
-        <select
-          value={this.node.operator}
-          className={this.styles.select}
-          onChange={this.onOperatorChanged}
-        >
-          {this.state.currField.operators.map((operator, index) =>
-            <option value={operator.operator} key={index}>{operator.label}</option>
-          )}
-        </select>
-        {this.getInputTag(this.state.currField.input.type)}
-        <button
-          type="button"
-          className={this.styles.deleteBtn}
-          onClick={this.handleDelete}
-        >{this.props.buttonsText.delete}</button>
+        {typeof this.props.fieldRenderer === 'function' ? this.props.fieldRenderer(this.onFieldValueChanged, this.node.field, `${this.props.nodeName}.field`) :
+          (<select
+            value={this.node.field}
+            className={this.styles.select}
+            onChange={this.onFieldChanged}
+          >
+            {this.props.fields.map((field, index) =>
+              <option value={field.name} key={index}>{field.label}</option>
+            )}
+          </select>)}
+        {typeof this.props.operatorRenderer === 'function' ? this.props.operatorRenderer(this.onOperatorValueChange, this.node.operator, `${this.props.nodeName}.operator`, this.state.currField.operators) :
+          (<select
+            value={this.node.operator}
+            className={this.styles.select}
+            onChange={this.onOperatorChanged}
+          >
+            {this.state.currField.operators.map((operator, index) =>
+              <option value={operator.operator} key={index}>{operator.label}</option>
+            )}
+          </select>)
+        }
+        {typeof this.state.currField.input.renderer === 'function' ?
+          this.state.currField.input.renderer(this.onInputValueChange, (instance) => {
+            this.inputRef = instance;
+          }, this.node.value, `${this.props.nodeName}.input`, this.state.validationError) : this.getInputTag(this.state.currField.input.type)}
+        {typeof this.props.deleteButtonRenderer === 'function' ? this.props.deleteButtonRenderer(this.handleDelete, this.props.buttonsText.delete) :
+          <button
+            type="button"
+            className={this.styles.deleteBtn}
+            onClick={this.handleDelete}
+          >{this.props.buttonsText.delete}</button>
+        }
       </div>
     );
   }
@@ -223,6 +243,9 @@ Rule.propTypes = {
   onChange: PropTypes.func,
   operators: PropTypes.array.isRequired,
   styles: PropTypes.object.isRequired,
+  fieldRenderer: PropTypes.func,
+  operatorRenderer: PropTypes.func,
+  deleteButtonRenderer: PropTypes.func,
 };
 
 export default Rule;
