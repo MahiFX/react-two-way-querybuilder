@@ -23,8 +23,21 @@ class Condition extends React.Component {
   addRule() {
     const data = this.state.data;
     const nodeName = this.treeHelper.generateNodeName(this.state.data);
+    let field = null;
+    if (data.rules.length !== 0) {
+      if (data.combinator === 'or') {
+        field = data.rules[0].field;
+      } else if (data.combinator === 'and') {
+        const usedFields = data.rules.map(rule => rule.field);
+        const unusedFields = this.props.fields.map(obj => obj.name)
+          .filter(obj => !usedFields.includes(obj));
+        if (unusedFields.length !== 0) {
+          field = unusedFields[0];
+        }
+      }
+    }
     data.rules.push({
-      field: this.props.fields[0].name,
+      field: (field === null) ? this.props.fields[0].name : field,
       operator: this.props.config.operators[0].operator,
       value: '',
       nodeName,

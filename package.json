@@ -1,6 +1,6 @@
 {
   "name": "@mahimarkets/react-two-way-querybuilder",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "React Two Way Querybuilder Component",
   "author": "Vladimir Ostapenko",
   "homepage": "https://github.com/Lefortov/react-two-way-querybuilder",
@@ -52,8 +52,5 @@
     "office-ui-fabric-react": "^6.149.0",
     "prop-types": "^15.5.8"
   },
-  "main": "dist/index.js",
-  "engines": {
-    "npm": "^3.0.0"
-  }
+  "main": "dist/index.js"
 }
