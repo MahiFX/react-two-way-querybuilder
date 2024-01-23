@@ -10,19 +10,19 @@ const isValueCorrect = (pattern, value) => {
   return match === null;
 };
 
-class Rule extends React.Component {
+const setNativeValue = (element, value) => {
+  const { set: valueSetter } = Object.getOwnPropertyDescriptor(element, 'value') || {};
+  const prototype = Object.getPrototypeOf(element);
+  const { set: prototypeValueSetter } = Object.getOwnPropertyDescriptor(prototype, 'value') || {};
 
-  static setNativeValue(element, value) {
-    const { set: valueSetter } = Object.getOwnPropertyDescriptor(element, 'value') || {};
-    const prototype = Object.getPrototypeOf(element);
-    const { set: prototypeValueSetter } = Object.getOwnPropertyDescriptor(prototype, 'value') || {};
-
-    if (prototypeValueSetter && valueSetter !== prototypeValueSetter) {
-      prototypeValueSetter.call(element, value);
-    } else if (valueSetter) {
-      valueSetter.call(element, value);
-    }
+  if (prototypeValueSetter && valueSetter !== prototypeValueSetter) {
+    prototypeValueSetter.call(element, value);
+  } else if (valueSetter) {
+    valueSetter.call(element, value);
   }
+};
+
+class Rule extends React.Component {
 
   constructor(props) {
     super(props);
@@ -46,6 +46,13 @@ class Rule extends React.Component {
         currField: this.generateRuleObject(field, this.node),
         validationError: false,
       };
+    } else {
+      this.state = {
+        currField: {
+          input: {},
+        },
+        validationError: false,
+      };
     }
   }
 
@@ -63,7 +70,7 @@ class Rule extends React.Component {
     this.node.field = value;
     this.node.value = '';
     if (this.inputRef) {
-      Rule.setNativeValue(this.inputRef, '');
+      setNativeValue(this.inputRef, '');
     }
     this.onInputValueChange('');
   }
@@ -180,7 +187,7 @@ class Rule extends React.Component {
     const ruleOperators = [];
     for (let i = 0, length = field.operators.length; i < length; i += 1) {
       for (let opIndex = 0, opLength = this.props.operators.length; opIndex < opLength;
-           opIndex += 1) {
+        opIndex += 1) {
         if (field.operators[i] === this.props.operators[opIndex].operator) {
           ruleOperators.push(this.props.operators[opIndex]);
         }
@@ -205,7 +212,7 @@ class Rule extends React.Component {
             onChange={this.onFieldChanged}
           >
             {this.props.fields.map((field, index) =>
-              <option value={field.name} key={index}>{field.label}</option>
+              <option value={field.name} key={index}>{field.label}</option>,
             )}
           </select>)}
         {typeof this.props.operatorRenderer === 'function' ? this.props.operatorRenderer(this.onOperatorValueChange, this.node.operator, `${this.props.nodeName}.operator`, this.state.currField.operators) :
@@ -215,7 +222,7 @@ class Rule extends React.Component {
             onChange={this.onOperatorChanged}
           >
             {this.state.currField.operators.map((operator, index) =>
-              <option value={operator.operator} key={index}>{operator.label}</option>
+              <option value={operator.operator} key={index}>{operator.label}</option>,
             )}
           </select>)
         }

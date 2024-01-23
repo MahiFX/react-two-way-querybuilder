@@ -1,6 +1,6 @@
 {
   "name": "@mahimarkets/react-two-way-querybuilder",
-  "version": "1.0.9",
+  "version": "1.0.11",
   "description": "React Two Way Querybuilder Component",
   "author": "Vladimir Ostapenko",
   "homepage": "https://github.com/Lefortov/react-two-way-querybuilder",
@@ -42,9 +42,9 @@
     "jsdom": "^9.5.0",
     "mocha": "^3.0.2",
     "raw-loader": "^0.5.1",
-    "react": "^16.3.2",
+    "react": "^16.14.0",
     "react-addons-test-utils": "^16.0.0-alpha.3",
-    "react-dom": "^16.3.2",
+    "react-dom": "^16.14.0",
     "sinon": "^1.17.6"
   },
   "dependencies": {
